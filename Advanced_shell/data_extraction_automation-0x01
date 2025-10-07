@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Script: data_extraction_automation-0x01
-# Description: Extract Pikachu's name, height, weight, and type from data.json
-# Only jq, awk, and sed are used.
+# Description: Extracts Pikachu's name, height, weight, and type from data.json
+# Only uses jq, awk, and sed
 
 DATA_FILE="data.json"
 
@@ -12,11 +12,15 @@ if [ ! -f "$DATA_FILE" ]; then
     exit 1
 fi
 
-# Extract values using jq
-name=$(jq -r '.name' "$DATA_FILE" | sed 's/.*/\u&/')        # Capitalize name
-height=$(jq -r '.height' "$DATA_FILE" | awk '{print $1/10}') # Convert decimetres to metres
-weight=$(jq -r '.weight' "$DATA_FILE" | awk '{print $1/10}') # Convert hectograms to kilograms
-type=$(jq -r '.types[0].type.name' "$DATA_FILE" | sed 's/.*/\u&/') # Capitalize type
+# Extract and format data
+name=$(jq -r '.name' "$DATA_FILE" | sed 's/.*/\u&/')
+height=$(jq -r '.height' "$DATA_FILE" | awk '{print $1/10}')
+weight=$(jq -r '.weight' "$DATA_FILE" | awk '{print $1/10}')
+type=$(jq -r '.types[0].type.name' "$DATA_FILE" | sed 's/.*/\u&/')
 
-# Output in human-readable format
-echo "$name is of type $type, weighs ${weight}kg, and is ${height}m tall."
+# Format height and weight for output
+formatted_height=$(printf "%.1f" "$height")
+formatted_weight=$(printf "%.0f" "$weight")
+
+# Output in the required format
+echo "$name is of type $type, weighs ${formatted_weight}kg, and is ${formatted_height}m tall."

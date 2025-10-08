@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script: batchProcessing-0x04
-# Description: Fetch data for multiple Pokémon in parallel using background processes.
+# Description: Fetch data for multiple Pokémon in parallel and manage background processes.
 
 POKEMONS=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
 BASE_URL="https://pokeapi.co/api/v2/pokemon"
@@ -24,13 +24,23 @@ fetch_pokemon() {
     fi
 }
 
-# Start fetching each Pokémon in the background
+# Array to store process IDs
+pids=()
+
+# Start background processes
 for pokemon in "${POKEMONS[@]}"; do
     fetch_pokemon "$pokemon" &
+    pids+=($!)
 done
 
-# Wait for all background jobs to complete
-wait
+# Wait for all processes to complete
+for pid in "${pids[@]}"; do
+    wait "$pid" || {
+        echo "⚠️  Process $pid failed, terminating remaining background jobs..."
+        kill "${pids[@]}" 2>/dev/null
+        break
+    }
+done
 
 echo ""
 echo "✅ All Pokémon data fetched and saved in '$OUTPUT_DIR/'"
